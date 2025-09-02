@@ -1,0 +1,69 @@
+class Visitor {
+public:
+    virtual ~Visitor() = default;
+};
+
+template<class VisitedType>
+class VisitorFor {
+public:
+    virtual void visit(VisitedType&) = 0;
+};
+
+class Visitable {
+public:
+    virtual void accept(Visitor& v) = 0;
+    virtual ~Visitable() = default;
+};
+
+
+class ElementA : public Visitable {
+public:
+    void accept(Visitor& v) override {
+        if (auto* specific = dynamic_cast<VisitorFor<ElementA>*>(&v)) {
+            specific->visit(*this);
+        }
+    }
+    void fooA() { std::cout << "ElementA specific\n"; }
+};
+
+class ElementB : public Visitable {
+public:
+    void accept(Visitor& v) override {
+        if (auto* specific = dynamic_cast<VisitorFor<ElementB>*>(&v)) {
+            specific->visit(*this);
+        }
+    }
+    void fooB() { std::cout << "ElementB specific\n"; }
+};
+
+// Visitor, uses only visit-methods
+class PrintVisitor : public Visitor,
+                    public VisitorFor<ElementA>,
+                    public VisitorFor<ElementB> {
+public:
+    void visit(ElementA& a) override {
+        std::cout << "PrintVisitor: visiting ElementA\n";
+        a.fooA();
+    }
+    void visit(ElementB& b) override {
+        std::cout << "PrintVisitor: visiting ElementB\n";
+        b.fooB();
+    }
+};
+
+// Visitor, only for ElementA 
+class OnlyAVisitor : public Visitor, public VisitorFor<ElementA> {
+public:
+    void visit(ElementA& a) override {
+        std::cout << "OnlyAVisitor: only ElementA\n";
+    }
+};
+
+Advantages:
+    No need to modify existing Visitor classes when adding new types.
+    No need to implement all methods for all visitors.
+    Simplifies the development of object hierarchy and traversal logic.
+
+The pattern is convenient for complex systems where the methods of processing types change dynamically, for example, parsers, ASTs, GUI systems.
+
+Acyclic Visitor Pattern facilitates the separation of responsibilities between Visitors and elements, increasing the flexibility of the architecture and reducing coupling.

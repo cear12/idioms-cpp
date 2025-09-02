@@ -1,0 +1,173 @@
+1. dynamic_cast
+
+if (Derived* d = dynamic_cast<Derived*>(b)) {
+  ...
+}
+
+Advantages:
+	The class does not have to be designed in any special way.
+Disadvantages:
+	Requires RTTI to be compiled in
+
+
+2. virtual function
+
+class Derived;         // Forward declaration
+
+class Base {
+public:
+  virtual Derived* IsDerived() { return 0; }
+};
+
+class Derived : public Base {
+public:
+  virtual Derived* IsDerived() { return this; }
+};
+
+Base* b = ...;
+  .
+  .
+  .
+if (Derived* d = b->IsDerived()) {
+  ...
+}
+
+Advantages:
+	Does not require RTTI
+	Easy to get right
+Disadvantages:
+	Requires defining virtual functions for every subclass that can be the target of a downcast.
+
+
+3. type tags and static_cast
+
+class Base {
+public:
+  enum Type { BASE, DERIVED };
+  Type type() const { return mType; }
+
+  Base() : mType(BASE) { }
+
+  enum { TAG = BASE };       // For the down_cast function below
+
+protected:
+  // Protected since it's only intended for subclasses
+  Base(Type t) : mType(t) { }
+
+private:
+  Type mType;
+};
+
+class Derived : public Base {
+public:
+  Derived() : Base(Base::DERIVED) { }
+
+  enum { TAG = DERIVED };    // For the down_cast function below
+};
+
+Base* b = ...;
+  .
+  .
+  .
+Derived* d = b->type() == DERIVED ? static_cast<Derived*>(b) : 0;
+
+or
+
+template <class Target, class Source>
+Target* down_cast(Source* s) {
+  return s->type() == Target::TAG ? static_cast<Target*>(s) : 0;
+}
+
+if (Derived* d = down_cast<Derived>(b)) {
+ ...
+}
+
+Advantages:
+	Does not require RTTI
+Disadvantages:
+	Requires extending an enum with a new type tag for each class that can be the target of a downcast.
+	Hard to maintain for large number of subclasses
+
+
+4. manual RTTI
+
+class TestDerived1;
+class TestDerived2;
+
+class TestBase {
+public:
+    virtual ~TestBase() = default;
+    
+    virtual TestDerived1* asTestDerived1() { return nullptr; }
+    virtual TestDerived2* asTestDerived2() { return nullptr; }
+};
+
+class TestDerived1 : public TestBase {
+public:  
+    TestDerived1* asTestDerived1() override { return this; }
+};
+
+class TestDerived2 : public TestBase {
+public:    
+    TestDerived2* asTestDerived2() override { return this; }
+};
+
+if( TestDerived1* derived1 = obj1->asTestDerived1() ) {
+	...
+}
+
+Good for:
+	Embedded systems: Where RTTI is disabled to save memory
+	Real-time systems: Where predictable performance is critical
+	Game engines: Where frequent dynamic_casts can impact FPS
+	Legacy systems: Without support for modern C++ features
+	Closed hierarchies: Where the set of derived classes is fixed and known
+
+Not good for:
+	Open hierarchies: Where new classes are added frequently
+	Libraries: Where users can extend the hierarchy
+	RTTI-enabled systems: Where dynamic_cast is available and preferred
+
+Advantages:
+	Works without RTTI (-fno-rtti)
+	Predictable performance (simple virtual function call)
+	Compiles faster than dynamic_cast
+	Explicitly shows all supported types in the base class
+	Safety: returns nullptr on failure
+
+Disadvantages:
+	Violates the open/closed principle - adding a new class requires changing the base class
+	Increases coupling between classes
+	The base class must "know" about all descendants
+	Increases the size of the virtual table
+	Requires discipline when adding new classes
+
+
+5. template asCast
+
+template<typename To, typename From>
+To* as_cast(From* ptr) noexcept {
+    if (!ptr) return nullptr;
+    
+    if constexpr (std::is_polymorphic_v<From>) {
+        return dynamic_cast<To*>(ptr);
+    } 
+    else if constexpr (std::is_convertible_v<From*, To*>) {
+        return static_cast<To*>(ptr);
+    }
+    else {
+        return nullptr;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
