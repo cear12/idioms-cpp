@@ -1,0 +1,98 @@
+/*
+The Thread-Safe Interface idiom is named because it provides an API ("interface") where all operations are safe to call from multiple threads simultaneously. The term "thread-safe" means that data races and undefined behavior are prevented, regardless of how clients use the interface in concurrent contexts.
+
+Why it's called "Thread-Safe Interface"
+Thread-Safe: All public methods internally synchronize access, so the user doesn't have to manage locking manually.
+
+Interface: The exposed functions mirror or wrap the original API, giving users the same functional access but with built-in protection against concurrent modification.
+
+Purpose and Use Cases
+Safe Access to Shared Data: Makes sure that simultaneous operations by different threads don't corrupt shared data or cause crashes.
+
+Encapsulation of Synchronization: The class takes care of locking, meaning calling code stays clean and simple without explicit mutex management—users just call functions as usual.
+
+Common Use Cases:
+
+Shared containers (vectors, lists, maps) in multithreaded services.
+
+Logging objects, counters, caches, pools, or any resource where multiple threads might read and write.
+
+Libraries and frameworks needing to guarantee correctness with concurrent access.
+
+This idiom is fundamental for writing robust multithreaded C++ code, keeping code clean and maintainable while avoiding subtle and hard-to-debug concurrency problems.
+*/
+
+/*
+    Example of Thread-Safe Interface idiom.
+    This class wraps std::vector<T> with a mutex, making all operations safe.
+*/
+
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <chrono>
+
+// ThreadSafeVector provides safe concurrent access to an internal vector
+template<typename T>
+class ThreadSafeVector {
+private:
+    std::vector<T> data_;       // underlying container
+    mutable std::mutex mtx_;    // protects data_
+
+public:
+    // Append an element in a thread-safe manner
+    void push_back(const T& value) {
+        std::lock_guard<std::mutex> lock(mtx_);
+        data_.push_back(value);
+    }
+
+    // Return the current size under lock
+    size_t size() const {
+        std::lock_guard<std::mutex> lock(mtx_);
+        return data_.size();
+    }
+
+    // Get element by index safely (throws if out of range)
+    T get(size_t index) const {
+        std::lock_guard<std::mutex> lock(mtx_);
+        return data_.at(index);
+    }
+};
+
+int main() {
+    ThreadSafeVector<int> tsVec;
+
+    // Worker that pushes numbers 0..99
+    auto producer = [&tsVec]() {
+        for (int i = 0; i < 100; ++i) {
+            tsVec.push_back(i);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    };
+
+    // Worker that reads size periodically
+    auto consumer = [&tsVec]() {
+        for (int i = 0; i < 20; ++i) {
+            size_t s = tsVec.size();
+            std::cout << "Size at step " << i << ": " << s << "\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        }
+    };
+
+    // Launch producer and consumer threads
+    std::thread t1(producer);
+    std::thread t2(consumer);
+
+    t1.join();
+    t2.join();
+
+    // Print final contents
+    std::cout << "Final contents:\n";
+    for (size_t i = 0; i < tsVec.size(); ++i) {
+        std::cout << tsVec.get(i) << " ";
+    }
+    std::cout << "\n";
+
+    return 0;
+}

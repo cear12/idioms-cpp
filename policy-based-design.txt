@@ -1,0 +1,72 @@
+/*
+    Пример Policy-based Design: Container с политиками выделения памяти и логирования.
+*/
+
+#include <iostream>
+#include <new>
+#include <string>
+
+template<typename T>
+struct DefaultAllocator {
+    T* allocate(size_t n) {
+        return static_cast<T*>(::operator new(n * sizeof(T)));
+    }
+    void deallocate(T* p) {
+        ::operator delete(p);
+    }
+};
+
+template<typename T>
+struct ConsoleLogger {
+    void log(const char* msg) {
+        std::cout << "[ConsoleLogger] " << msg << std::endl;
+    }
+};
+
+template<typename T>
+struct NoLogger {
+    void log(const char*) {}
+};
+
+template<
+    typename T,
+    template<typename> class AllocPolicy = DefaultAllocator,
+    template<typename> class LogPolicy   = NoLogger
+>
+class Container : private AllocPolicy<T>, private LogPolicy<T> {
+public:
+    void add(const T& value) {
+        this->log("add()");
+        T* p = this->allocate(1);
+        try {
+            new(p) T(value);
+        } catch(...) {
+            this->deallocate(p);
+            throw;
+        }
+
+        p->~T();
+        this->deallocate(p);
+    }
+
+    void info() const {
+        this->log("info()");
+    }
+};
+
+int main() {
+    Container<int, DefaultAllocator, ConsoleLogger> c1;
+    c1.info();
+    c1.add(42);
+
+    Container<std::string, DefaultAllocator, NoLogger> c2;
+    c2.info();
+    c2.add("Hello");
+    return 0;
+}
+
+Applicability
+    Libraries and frameworks that require flexible configuration of strategies without virtual functions.
+    Performance-sensitive code, avoid virtual calls.
+    Implementation of containers, algorithms, where behavioral aspects can be taken out into policies.
+

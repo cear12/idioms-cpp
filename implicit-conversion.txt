@@ -1,0 +1,75 @@
+/*
+    Example of Implicit Conversions idiom.
+    Demonstrates implicit conversion constructors and conversion operators.
+*/
+
+#include <iostream>
+#include <string>
+#include <cstdlib>
+
+// A wraps a string but can convert implicitly to int
+struct A {
+    // Implicit constructor from std::string
+    A(const std::string& s) : value(s) {}
+
+    // Implicit conversion operator to int
+    operator int() const {
+        return std::atoi(value.c_str());
+    }
+
+    void print() const {
+        std::cout << "A holds: " << value << "\n";
+    }
+
+private:
+    std::string value;
+};
+
+// A second type B with explicit constructor to suppress some implicit conversions
+struct B {
+    explicit B(const std::string& s) : value(s) {}
+
+    // implicit conversion to double
+    operator double() const {
+        return std::stod(value);
+    }
+
+    void print() const {
+        std::cout << "B holds: " << value << "\n";
+    }
+};
+
+// A function taking an int
+void printInt(int x) {
+    std::cout << "printInt: " << x << "\n";
+}
+
+// A function taking a double
+void printDouble(double d) {
+    std::cout << "printDouble: " << d << "\n";
+}
+
+int main() {
+    A a1("100");
+    a1.print();
+
+    // Implicit conversion A → int
+    printInt(a1);
+
+    // Implicit chain: const char* → std::string → A → int
+    printInt("200");
+
+    B b1("3.14");
+    b1.print();
+
+    // Implicit B → double
+    printDouble(b1);
+
+    // const char* → std::string → B is explicit, so this fails:
+    // printDouble("2.718"); // error: no matching function
+
+    // Explicit conversion required:
+    printDouble(static_cast<double>(B("2.718")));
+
+    return 0;
+}

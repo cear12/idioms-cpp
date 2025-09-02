@@ -1,0 +1,94 @@
+/*
+The result_of technique is a C++ idiom that allows the return type of a callable to be determined at compile time. This technique was especially important before full decltype support appeared in C++11, and allowed writing generic code that works with any function object.
+*/
+
+#include <iostream>
+#include <type_traits>
+#include <utility>
+
+// Generic invoke using std::result_of to deduce return type
+template <typename F, typename... Args>
+typename std::result_of<F(Args...)>::type
+invoke(F f, Args&&... args) {
+    // Forward arguments to preserve value category
+    return f(std::forward<Args>(args)...);
+}
+
+// A sample functor
+struct Multiplier {
+    int operator()(int x, int y) const {
+        return x * y;
+    }
+};
+
+int main() {
+    auto lambda = [](double a, double b) -> double {
+        return a + b;
+    };
+
+    Multiplier m;
+
+    // Deduce return type int
+    int prod = invoke(m, 3, 4);
+    std::cout << "3 * 4 = " << prod << '\n';
+
+    // Deduce return type double
+    double sum = invoke(lambda, 1.5, 2.5);
+    std::cout << "1.5 + 2.5 = " << sum << '\n';
+
+    return 0;
+}
+
+1. Generic wrappers
+
+template<typename F, typename... Args>
+typename std::result_of<F(Args...)>::type
+invoke_wrapper(F f, Args&&... args) {
+    // Логирование, измерение времени, обработка ошибок
+    std::cout << "Calling function...\n";
+    return f(std::forward<Args>(args)...);
+}
+
+
+2. Template metaprogramming
+
+template<typename Func, typename... Args>
+struct is_callable {
+    template<typename F, typename... A>
+    static auto test(int) -> decltype(
+        std::result_of<F(A...)>::type{}, std::true_type{}
+    );
+    
+    template<typename, typename...>
+    static std::false_type test(...);
+    
+    using type = decltype(test<Func, Args...>(0));
+};
+
+
+3. Async programming and thread pools
+
+template<typename Func, typename... Args>
+auto submit_task(Func func, Args&&... args) 
+    -> std::future<typename std::result_of<Func(Args...)>::type>
+{
+    using return_type = typename std::result_of<Func(Args...)>::type;
+    auto task = std::make_shared<std::packaged_task<return_type()>>(
+        std::bind(func, std::forward<Args>(args)...)
+    );
+    
+    std::future<return_type> result = task->get_future();
+    // Добавляем задачу в очередь...
+    return result;
+}
+
+C++17: std::invoke_result
+
+// old deprecated
+std::result_of<F(Args...)>::type
+
+// new recommended
+std::invoke_result_t<F, Args...>
+
+
+

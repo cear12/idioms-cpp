@@ -1,0 +1,96 @@
+#include <iostream>
+#include <utility>
+#include <cmath>
+
+// A simple 2D point
+using point = std::pair<double, double>;
+
+// Free functions defining the "shape" concept:
+point center(const point& p) { return p; }  // Just return the point itself
+
+double area(const point& p) {
+    // Treat point as a degenerate shape of zero area
+    return 0.0;
+}
+
+struct circle {
+    point center_; double radius_;
+    constexpr circle(point c, double r) noexcept
+      : center_(c), radius_(std::max(r, 0.0)) {}
+};
+
+point center(circle c)        { return c.center_; }
+double area(circle c)         { return M_PI * c.radius_ * c.radius_; }
+circle bounding_box(circle c) { return circle(c.center_, c.radius_); }
+void draw(circle c, std::ostream& os) {
+    os << "circle(center=(" << c.center_.first << "," << c.center_.second
+       << "), radius=" << c.radius_ << ")\n";
+}
+
+// A lightweight polymorphic reference
+class shape_ref {
+public:
+    // Minimal concept: types must support the free functions:
+    // center(T), area(T), bounding_box(T), draw(T, ostream&)
+    template<typename T>
+    explicit constexpr shape_ref(T const& x) noexcept
+      : obj_ptr_(&x),
+        vtbl_(&vtable_for<T>)
+    {}
+
+    // Forwarding functions
+    friend point center(shape_ref s) {
+        return s.vtbl_->do_center(s.obj_ptr_);
+    }
+    friend double area(shape_ref s) {
+        return s.vtbl_->do_area(s.obj_ptr_);
+    }
+    friend circle bounding_box(shape_ref s) {
+        return s.vtbl_->do_bounding_box(s.obj_ptr_);
+    }
+    friend void draw(shape_ref s, std::ostream& os) {
+        s.vtbl_->do_draw(s.obj_ptr_, os);
+    }
+
+private:
+    void const*        obj_ptr_;
+    struct vtable {
+        point    (*do_center)(      void const*);
+        double   (*do_area)(        void const*);
+        circle   (*do_bounding_box)(void const*);
+        void     (*do_draw)(        void const*, std::ostream&);
+    } const* vtbl_;
+
+    // Build a vtable instance for each concrete T
+    template<typename T>
+    static constexpr vtable vtable_for = {
+        /* do_center: */       +[](void const* p)->point {
+            return center(*static_cast<T const*>(p));
+        },
+        /* do_area: */         +[](void const* p)->double {
+            return area(*static_cast<T const*>(p));
+        },
+        /* do_bounding_box: */ +[](void const* p)->circle {
+            return bounding_box(*static_cast<T const*>(p));
+        },
+        /* do_draw: */         +[](void const* p, std::ostream& os)->void {
+            draw(*static_cast<T const*>(p), os);
+        }
+    };
+};
+
+int main() {
+    circle c{{0,0}, 5.0};
+
+    // We can treat different shapes uniformly:
+    shape_ref ref = c;
+
+    // Dynamic dispatch without inheritance or allocation:
+    std::cout << "Center: (" 
+              << center(ref).first << "," << center(ref).second << ")\n";
+    std::cout << "Area: "   << area(ref) << "\n";
+    std::cout << "BBox: "; draw(bounding_box(ref), std::cout);
+    std::cout << "Draw: "; draw(ref, std::cout);
+
+    return 0;
+}

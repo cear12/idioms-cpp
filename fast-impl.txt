@@ -1,0 +1,77 @@
+// Idiom: Fast Pimpl
+// Intent: Increase performance of Handle Body idiom using local buffer
+#include <type_traits>
+#include <new>
+#include <utility>
+#include <iostream>
+#if __cplusplus >= 201703L
+#include <memory> // For std::launder
+#endif
+
+// Public interface
+class Wrapper {
+public:
+    Wrapper();
+    ~Wrapper();
+    Wrapper(const Wrapper&) = delete;
+    Wrapper& operator=(const Wrapper&) = delete;
+
+    void doSomething();
+
+private:
+    // Reserve storage large enough for Wrapped
+    alignas(std::max_align_t) char storage;
+
+    // Forward declaration of implementation
+    struct Wrapped;
+
+    // Accessor for Wrapped instance in storage (C++17+)
+    Wrapped* getImpl();
+};
+
+// Hidden implementation
+struct Wrapper::Wrapped {
+    int value;
+    Wrapped() : value(42) {
+        std::cout << "Wrapped constructed with value=" << value << std::endl;
+    }
+    ~Wrapped() {
+        std::cout << "Wrapped destructed" << std::endl;
+    }
+    void work() {
+        std::cout << "Work with value=" << value << std::endl;
+    }
+};
+
+Wrapper::Wrapper() {
+    static_assert(sizeof(Wrapped) <= sizeof(storage), "Wrapped is too big for local storage");
+    // Placement new to construct Wrapped in storage
+#if __cplusplus >= 201703L
+    new (storage) Wrapped();
+#else
+    new (static_cast<void*>(storage)) Wrapped();
+#endif
+}
+
+Wrapper::~Wrapper() {
+    getImpl()->~Wrapped();
+}
+
+Wrapper::Wrapped* Wrapper::getImpl() {
+#if __cplusplus >= 201703L
+    return std::launder(reinterpret_cast<Wrapped*>(storage));
+#else
+    return reinterpret_cast<Wrapped*>(storage);
+#endif
+}
+
+void Wrapper::doSomething() {
+    getImpl()->work();
+}
+
+// Example usage
+int main() {
+    Wrapper w;
+    w.doSomething();
+    return 0;
+}

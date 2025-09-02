@@ -1,0 +1,91 @@
+/*
+Hierarchy Generation
+
+**Intent:**
+To generate a concrete class composed of various behavioral policies.
+
+**Also Known As:**
+–
+
+**Motivation:**
+When it is necessary to obtain many combinations of different implementations (for example, with different behavior variations via decorators), the standard solution is multiple inheritance, which causes a number of problems. The Hierarchy Generation idiom allows you to sequentially inherit base classes (policy templates) and build complex hierarchies without the drawbacks of multiple inheritance.
+
+**Solution:**
+Instead of multi-level inheritance or mixins, "successive inheritance" is used - using templates, a hierarchy is generated, where each layer is responsible for a separate aspect of behavior. Each policy class inherits the parent, forming a chain.
+
+**Sample Code:**
+See `example.cpp`.
+
+**Known Uses:**
+Flexible generation of objects with different sets of functions, extensible frameworks, components where it is necessary to dynamically vary behavior due to templates.
+
+**Related Idioms:**
+–
+
+**References:**
+- [More C++ Idioms - Hierarchy Generation](https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Hierarchy_Generation)
+*/
+
+#include <iostream>
+
+// Prototype for hierarchy generator
+template <template <class> class ... _PolicyTs>
+struct GenHierarchy;
+
+// Specialization for N policies: builds inheritance chain
+template <template <class> class _HeadPolicyT, template <class> class ... _TailPolicyTs>
+struct GenHierarchy<_HeadPolicyT, _TailPolicyTs...> : _HeadPolicyT<GenHierarchy<_TailPolicyTs...>> {};
+
+// Terminator (base case)
+template <> struct GenHierarchy<> {};
+
+// Behavior policies
+template<typename _ParentT> struct DanceA : _ParentT {
+    void Dance() { std::cout << "DanceA" << std::endl; }
+};
+template<typename _ParentT> struct DanceB : _ParentT {
+    void Dance() { std::cout << "DanceB" << std::endl; }
+};
+template<typename _ParentT> struct DanceC : _ParentT {
+    void Dance() { std::cout << "DanceC" << std::endl; }
+};
+
+template<typename _ParentT> struct JokeA : _ParentT {
+    void Joke() { std::cout << "JokeA" << std::endl; }
+};
+template<typename _ParentT> struct JokeB : _ParentT {
+    void Joke() { std::cout << "JokeB" << std::endl; }
+};
+template<typename _ParentT> struct JokeC : _ParentT {
+    void Joke() { std::cout << "JokeC" << std::endl; }
+};
+
+template<typename _ParentT> struct SongA : _ParentT {
+    void Sing() { std::cout << "SongA" << std::endl; }
+};
+template<typename _ParentT> struct SongB : _ParentT {
+    void Sing() { std::cout << "SongB" << std::endl; }
+};
+template<typename _ParentT> struct SongC : _ParentT {
+    void Sing() { std::cout << "SongC" << std::endl; }
+};
+
+// Concrete types using combinations of policies
+using BozoTheClown = GenHierarchy<DanceA, JokeB, SongC>;
+using HowdyDoody = GenHierarchy<DanceB, JokeA, SongA>;
+using RedButtons = GenHierarchy<DanceC, JokeC, SongB>;
+
+// Example utility
+template <typename EntertainerT>
+void Entertain(EntertainerT entertainer) {
+    entertainer.Sing();
+    entertainer.Dance();
+    entertainer.Joke();
+}
+
+int main() {
+    Entertain(BozoTheClown());
+    Entertain(HowdyDoody());
+    Entertain(RedButtons());
+    return 0;
+}

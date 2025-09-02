@@ -1,0 +1,228 @@
+/*
+    Example of the Shortening Long Template Names idiom.
+    Demonstrates various techniques for creating readable aliases for complex template types.
+*/
+
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <unordered_map>
+#include <string>
+#include <functional>
+
+// =============================================================================
+// 1. TYPEDEF for specific instantiations (old C++98 style)
+// =============================================================================
+
+// Long name: std::unique_ptr<std::vector<std::string>>
+typedef std::unique_ptr<std::vector<std::string>> StringVecPtr;
+
+// Long name: std::unordered_map<std::string, std::shared_ptr<std::string>>
+typedef std::unordered_map<std::string, std::shared_ptr<std::string>> StringCache;
+
+// =============================================================================
+// 2. USING declarations (C++11+ style, preferred)
+// =============================================================================
+
+// More readable than typedef
+using StringMap = std::unordered_map<std::string, std::string>;
+using IntVector = std::vector<int>;
+
+// For functional types, using is much more readable
+using EventHandler = std::function<void(const std::string&, int)>;
+using Predicate = std::function<bool(int)>;
+
+// =============================================================================
+// 3. ALIAS TEMPLATES - parameterized aliases (C++11+)
+// =============================================================================
+
+// Universal aliases for frequently used templates
+template<typename T>
+using UniquePtr = std::unique_ptr<T>;
+
+template<typename T>
+using SharedPtr = std::shared_ptr<T>;
+
+template<typename T>
+using Vector = std::vector<T>;
+
+template<typename K, typename V>
+using Map = std::unordered_map<K, V>;
+
+// More complex alias templates
+template<typename T>
+using VectorPtr = std::unique_ptr<std::vector<T>>;
+
+template<typename T>
+using Matrix = std::vector<std::vector<T>>;
+
+// Specialized containers with custom allocators
+template<typename T, typename Allocator = std::allocator<T>>
+using CustomVector = std::vector<T, Allocator>;
+
+// =============================================================================
+// 4. LOCAL aliases inside functions and classes
+// =============================================================================
+
+class DataProcessor {
+public:
+    // Class-level local aliases
+    using DataType = std::pair<std::string, double>;
+    using DataContainer = std::vector<DataType>;
+    using ProcessorFunc = std::function<double(const DataType&)>;
+    
+private:
+    DataContainer data_;
+    ProcessorFunc processor_;
+    
+public:
+    void processData() {
+        // Local alias inside function scope
+        using ResultType = std::unordered_map<std::string, std::vector<double>>;
+        
+        ResultType results;
+        
+        for (const auto& item : data_) {
+            if (processor_) {
+                double result = processor_(item);
+                results[item.first].push_back(result);
+            }
+        }
+        
+        // Use the results...
+        for (const auto& [key, values] : results) {
+            std::cout << key << " has " << values.size() << " results\n";
+        }
+    }
+};
+
+// =============================================================================
+// USAGE DEMONSTRATION
+// =============================================================================
+
+void demonstrateBasicUsage() {
+    std::cout << "=== Basic alias usage ===\n";
+    
+    // Using typedef aliases
+    StringVecPtr strings = std::make_unique<std::vector<std::string>>();
+    strings->push_back("Hello");
+    strings->push_back("World");
+    
+    StringCache cache;
+    cache["key1"] = std::make_shared<std::string>("value1");
+    cache["key2"] = std::make_shared<std::string>("value2");
+    
+    // Using 'using' aliases
+    StringMap config;
+    config["debug"] = "true";
+    config["port"] = "8080";
+    
+    IntVector numbers = {1, 2, 3, 4, 5};
+    
+    std::cout << "StringVec size: " << strings->size() << "\n";
+    std::cout << "Cache size: " << cache.size() << "\n";
+    std::cout << "Config size: " << config.size() << "\n";
+    std::cout << "Numbers size: " << numbers.size() << "\n";
+}
+
+void demonstrateAliasTemplates() {
+    std::cout << "\n=== Alias Templates usage ===\n";
+    
+    // Using alias templates - much shorter!
+    UniquePtr<int> number = std::make_unique<int>(42);
+    SharedPtr<std::string> text = std::make_shared<std::string>("Hello");
+    Vector<double> values = {1.1, 2.2, 3.3};
+    Map<std::string, int> counts = {{"apples", 5}, {"oranges", 3}};
+    
+    // Complex types become readable
+    VectorPtr<int> numbersList = std::make_unique<std::vector<int>>();
+    numbersList->push_back(10);
+    numbersList->push_back(20);
+    
+    Matrix<int> matrix = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    };
+    
+    std::cout << "Number: " << *number << "\n";
+    std::cout << "Text: " << *text << "\n";
+    std::cout << "Values size: " << values.size() << "\n";
+    std::cout << "Counts size: " << counts.size() << "\n";
+    std::cout << "Matrix size: " << matrix.size() << "x" << matrix[0].size() << "\n";
+}
+
+void demonstrateComplexExample() {
+    std::cout << "\n=== Complex event handling example ===\n";
+    
+    // Without aliases this would be unreadable:
+    // std::unordered_map<std::string, std::vector<std::function<void(const std::string&, int)>>>
+    
+    using EventHandlers = Map<std::string, Vector<EventHandler>>;
+    
+    EventHandlers handlers;
+    
+    // Add event handlers
+    handlers["user_login"].push_back([](const std::string& user, int timestamp) {
+        std::cout << "User " << user << " logged in at " << timestamp << "\n";
+    });
+    
+    handlers["user_logout"].push_back([](const std::string& user, int timestamp) {
+        std::cout << "User " << user << " logged out at " << timestamp << "\n";
+    });
+    
+    // Simulate events
+    for (const auto& [event, handlerList] : handlers) {
+        std::cout << "Event '" << event << "' has " << handlerList.size() << " handlers\n";
+        
+        // Call all handlers for demonstration
+        for (const auto& handler : handlerList) {
+            handler("john_doe", 1635724800);
+        }
+    }
+}
+
+// Demonstration of local aliases in template function
+template<typename Container>
+void processContainer(const Container& container) {
+    // Local aliases make the code more readable
+    using ValueType = typename Container::value_type;
+    using SizeType = typename Container::size_type;
+    using Iterator = typename Container::const_iterator;
+    
+    std::cout << "\n=== Processing container ===\n";
+    std::cout << "Size: " << static_cast<SizeType>(container.size()) << "\n";
+    std::cout << "Elements: ";
+    
+    for (Iterator it = container.begin(); it != container.end(); ++it) {
+        std::cout << *it << " ";
+    }
+    std::cout << "\n";
+}
+
+int main() {
+    demonstrateBasicUsage();
+    demonstrateAliasTemplates();
+    demonstrateComplexExample();
+    
+    // DataProcessor demonstration
+    std::cout << "\n=== DataProcessor example ===\n";
+    DataProcessor processor;
+    processor.processData();
+    
+    // Template function demonstration with local aliases
+    Vector<int> numbers = {1, 2, 3, 4, 5};
+    processContainer(numbers);
+    
+    Vector<std::string> words = {"Hello", "World", "!"};
+    processContainer(words);
+    
+    std::cout << "\n=== Benefits of using aliases ===\n";
+    std::cout << "1. Improved code readability\n";
+    std::cout << "2. Fewer typos when writing\n";
+    std::cout << "3. Easier refactoring and type changes\n";
+    std::cout << "4. Self-documenting code\n";
+    std::cout << "5. Consistency in type usage\n";
+    
+    return 0;
+}

@@ -1,0 +1,52 @@
+/*
+Function Poisoning
+
+**Intent**
+
+Hide or disable the use of deprecated or unsafe functions, replacing them with more modern and safe alternatives.
+
+**Motivation**
+
+When working with C or pre-C++11 libraries, it is common to use functions that return raw pointers (`T*`) and require manual resource release. Modern C++ prefers RAII objects (`std::unique_ptr`) for automatic lifetime management. The *Function Poisoning* idiom allows you to disable calls to the original functions and offer replacement wrappers.
+
+**Solution**
+
+1. Define a wrapper that returns an RAII type with a pointer and an appropriate divisor.
+
+2. Mark the original function as "poisoned" with `#pragma GCC poison` to disable its use and force the use of the wrapper.
+*/
+
+#include <memory>
+#include <iostream>
+
+struct foo { int value; };
+
+extern "C" foo* create_foo();
+extern "C" void foo_destroy(foo*);
+
+
+foo* create_foo() { return new foo{42}; }
+void foo_destroy(foo* p) { delete p; }
+
+
+struct foo_deleter {
+    void operator()(foo* p) const {
+        foo_destroy(p);
+    }
+};
+using unique_foo = std::unique_ptr<foo, foo_deleter>;
+
+inline unique_foo create_unique_foo() {
+    return unique_foo{ create_foo() };
+}
+
+#pragma GCC poison create_foo
+
+int main() {
+    unique_foo uf = create_unique_foo();
+    std::cout << "foo.value = " << uf->value << "\n";
+
+    // error
+    // foo* raw = create_foo();
+    return 0;
+}
