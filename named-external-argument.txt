@@ -1,0 +1,34 @@
+from
+	configureWindow(640, 480, true, false, 5);
+to
+	configureWindow(width = 640, height = 480, resizable = true, decorated = false, border = 5);
+
+
+struct Width     { int value; };
+struct Height    { int value; };
+struct Resizable { bool value; };
+struct Decorated { bool value; };
+struct Title     { std::string value; };
+
+constexpr Width     width(int v)     { return Width{v}; }
+constexpr Height    height(int v)    { return Height{v}; }
+constexpr Resizable resizable(bool v){ return Resizable{v}; }
+constexpr Decorated decorated(bool v){ return Decorated{v}; }
+Title title(const std::string& v)    { return Title{v}; }
+
+void configureWindow(Width w,
+                     Height h,
+                     Resizable r,
+                     Decorated d,
+                     Title t)
+{
+    std::cout << "Window Configuration:\n"
+              << "  Width     = " << w.value     << "\n"
+              << "  Height    = " << h.value     << "\n"
+              << "  Resizable = " << std::boolalpha << r.value << "\n"
+              << "  Decorated = " << std::boolalpha << d.value << "\n"
+              << "  Title     = " << t.value     << "\n";
+}
+
+
+configureWindow(width(800), height(600), resizable(true), decorated(false), title("My App Window"));
