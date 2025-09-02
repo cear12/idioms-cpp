@@ -1,0 +1,49 @@
+template<typename T> struct TypeParam { using type = T; };
+template<template<class> class Cmp> struct ComparatorParam { template<typename U> using type = Cmp<U>; };
+template<std::size_t N> struct SizeParam { static constexpr std::size_t value = N; };
+
+
+using DefaultType       = TypeParam<int>;
+using DefaultComparator = ComparatorParam<std::less>;
+using DefaultSize       = SizeParam<16>;
+
+
+template<template<class, template<class> class, std::size_t> class Template,
+         typename... NamedParams>
+struct apply_named_params;
+
+
+template<template<class, template<class> class, std::size_t> class Template,
+         typename TypeP, typename CmpP, typename SizeP>
+struct apply_named_params<Template, TypeP, CmpP, SizeP> {
+    using type = Template<typename TypeP::type,
+                          CmpP::template type<typename TypeP::type>,
+                          SizeP::value>;
+};
+
+
+template<typename T, template<class> class Cmp, std::size_t N>
+class Container {
+public:
+    void info() const {
+        std::cout << "Container<" << typeid(T).name()
+                  << ", comparator, size=" << N << ">\n";
+    }
+};
+
+
+using MyContainer = apply_named_params<Container,
+                 TypeParam<double>,
+                 SizeParam<32>,
+                 ComparatorParam<std::greater>>::type;
+
+MyContainer c;
+c.info();  // Вывод: Container<double, comparator, size=32>
+
+
+using DefaultContainer = apply_named_params<Container,
+                      TypeParam<char>,
+                      DefaultComparator,
+                      DefaultSize>::type;
+
+DefaultContainer d;
