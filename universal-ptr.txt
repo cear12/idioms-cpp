@@ -1,0 +1,15 @@
+template<typename T>
+struct UniversalPtr
+        constexpr UniversalPtr() noexept = default;
+        constexpr UniversalPtr( nullptr_t) noexept {};
+
+        template<typename U> UniversalPtr(U& r)
+        template<typename U> UniversalPtr(U* r)
+        template<typename U, typename U> UniversalPtr(unique_ptr<U, D>&& d )
+
+private:
+        static constexr void NoDelete(T*) noexept{}
+        std::shared_ptr<T> m_ptr;
+}
+
+// if & or * - owns, else not

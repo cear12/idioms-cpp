@@ -1,0 +1,55 @@
+// Enum для типов зданий
+enum class Buildings {
+    FARM,
+    FORGE
+};
+
+// Базовый класс спецификации здания
+struct BuildingSpec {
+    virtual Buildings building_type() const = 0;
+    virtual ~BuildingSpec() = default;
+};
+
+// Спецификация фермы
+struct FarmSpec : public BuildingSpec {
+    Buildings building_type() const override { return Buildings::FARM; }
+    bool with_pasture;
+    int number_of_stalls;
+};
+
+// Спецификация кузницы
+struct ForgeSpec : public BuildingSpec {
+    Buildings building_type() const override { return Buildings::FORGE; }
+    bool magic_forge;
+    int number_of_apprentices;
+};
+
+// Базовый класс здания
+class Building {
+public:
+    virtual ~Building() = default;
+};
+
+// Класс фермы
+class Farm : public Building {
+public:
+    static Building* MakeBuilding() { return new Farm(); }
+};
+
+// Класс кузницы
+class Forge : public Building {
+public:
+    static Building* MakeBuilding() { return new Forge(); }
+};
+
+// Фабрика для создания зданий
+Building* MakeBuilding(const BuildingSpec* building_spec) {
+    switch (building_spec->building_type()) {
+        case Buildings::FARM:
+            return new Farm(static_cast<const FarmSpec*>(building_spec));
+        case Buildings::FORGE:
+            return new Forge(static_cast<const ForgeSpec*>(building_spec));
+        default:
+            return nullptr;
+    }
+}

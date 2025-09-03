@@ -1,0 +1,23 @@
+struct ImageView : enable_shared_from_this< ImageView >
+{
+    ImageView() // сделать приватным
+
+    static auto create()
+    {
+            return shared_ptr< ImageView >( new ImageView );
+    }
+
+    void test()
+    {
+        weak_ptr ws = shared_from_this();
+        load( url, [] .... )
+        {
+            if( auto wsl = ws.lock()) // объект еще сущ-т
+            {
+            }
+            else // объект удален
+            {
+            }
+        }
+    }
+}

@@ -1,0 +1,14 @@
+template<typename... Lambdas>
+auto make_lambda(Lambdas... lambdas) {
+    return [=](auto&& arg) {
+        (lambdas(arg), ...); 
+    };
+}
+
+int main() {
+    auto resultPrinter = make_lambda(
+        [](std::monostate) { std::cout << "Empty state\n"; },
+        [](int x) { std::cout << "Integer: " << x << std::endl; },
+        [](const std::string& str) { std::cout << "String: " << str << std::endl; }
+    );
+}
