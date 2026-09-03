@@ -22,12 +22,12 @@ provide, and the compiler can inline the whole chain.
 template <typename Derived>
 class Base {
 public:
-    void do_something() { static_cast<Derived*>(this)->do_something_impl(); }
+    void DoSomething() { static_cast<Derived*>(this)->DoSomethingImpl(); }
 };
 
 class Foo : public Base<Foo> {
 public:
-    void do_something_impl() { /* ... */ }
+    void DoSomethingImpl() { /* ... */ }
 };
 ```
 

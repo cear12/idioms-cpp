@@ -12,15 +12,15 @@ class Function; // primary template intentionally undefined; only the
 template <typename R, typename... Args>
 class Function<R(Args...)> {
     struct ICallable {
-        virtual R invoke(Args... args) = 0;
+        virtual R Invoke(Args... args) = 0;
         virtual ~ICallable() = default;
     };
 
     template <typename F>
     struct CallableImpl : ICallable {
-        F f;
-        explicit CallableImpl(F f_) : f(std::move(f_)) {}
-        R invoke(Args... args) override { return f(std::forward<Args>(args)...); }
+        F f_;
+        explicit CallableImpl(F f) : f_(std::move(f)) {}
+        R Invoke(Args... args) override { return f_(std::forward<Args>(args)...); }
     };
 
 public:
@@ -30,7 +30,7 @@ public:
     Function(F f) : callable_(std::make_unique<CallableImpl<F>>(std::move(f))) {}
 
     R operator()(Args... args) const {
-        return callable_->invoke(std::forward<Args>(args)...);
+        return callable_->Invoke(std::forward<Args>(args)...);
     }
 
     explicit operator bool() const noexcept { return static_cast<bool>(callable_); }
@@ -39,18 +39,18 @@ private:
     std::unique_ptr<ICallable> callable_;
 };
 
-int subtract(int a, int b) { return a - b; }
+int Subtract(int a, int b) { return a - b; }
 
 struct Multiplier {
-    int factor;
-    int operator()(int x) const { return x * factor; }
+    int factor_;
+    int operator()(int x) const { return x * factor_; }
 };
 
 int main() {
     Function<int(int, int)> f1 = [](int a, int b) { return a + b; }; // lambda
     std::cout << "f1(10, 3) = " << f1(10, 3) << "\n";
 
-    Function<int(int, int)> f2 = subtract; // plain function
+    Function<int(int, int)> f2 = Subtract; // plain function
     std::cout << "f2(10, 3) = " << f2(10, 3) << "\n";
 
     Function<int(int)> f3 = Multiplier{5}; // functor with state

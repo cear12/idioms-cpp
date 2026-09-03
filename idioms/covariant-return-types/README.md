@@ -8,7 +8,7 @@ requiring a cast at the call site.
 
 ## Motivation
 
-A naive `clone()` override normally has to return `Shape*`, forcing callers
+A naive `Clone()` override normally has to return `Shape*`, forcing callers
 to `static_cast` the result back down to `Circle*` even though the function
 obviously returns a `Circle`. C++ allows an override's return type to differ
 from the base's as long as it is a pointer or reference to a class publicly
@@ -23,17 +23,17 @@ at the override, and any call made **through a pointer/reference of the
 derived static type** gets the precise type back with no cast.
 
 Note the emphasis: covariance narrows what the *override* returns, not what
-every call expression is typed as. Calling `clone()` through a
+every call expression is typed as. Calling `Clone()` through a
 `Shape*`/`unique_ptr<Shape>` that happens to point at a `Circle` still gives
 a call expression of static type `Shape*` -- the compiler only knows the
 static type of the pointer, not that it dynamically points to a `Circle` --
-even though `Circle::clone()` is the one that actually runs at runtime and
+even though `Circle::Clone()` is the one that actually runs at runtime and
 returns a `Circle*` under the hood. `example.cpp` demonstrates both cases
 side by side.
 
 ## Known Uses
 
-- Prototype-pattern `clone()` methods, as in `example.cpp`.
+- Prototype-pattern `Clone()` methods, as in `example.cpp`.
 - Fluent/builder APIs where a derived builder wants to return `Derived&`
   from a method it overrides that was declared to return `Base&`.
 

@@ -1,5 +1,5 @@
-// Base-from-Member idiom: base_from_member<T> is inherited ahead of Base,
-// so its `member` is fully constructed (base classes construct in
+// Base-from-Member idiom: BaseFromMember<T> is inherited ahead of Base,
+// so its `member_` is fully constructed (base classes construct in
 // declaration order) before Base's constructor runs and receives a
 // reference to it.
 //
@@ -17,40 +17,40 @@
 #include <utility>
 
 struct Member {
-    explicit Member(int x) : value(x) {
-        std::cout << "Member constructed with value=" << value << "\n";
+    explicit Member(int x) : value_(x) {
+        std::cout << "Member constructed with value=" << value_ << "\n";
     }
-    int value;
+    int value_;
 };
 
 struct Base {
     explicit Base(Member& m) {
-        std::cout << "Base constructed, sees Member value=" << m.value << "\n";
+        std::cout << "Base constructed, sees Member value=" << m.value_ << "\n";
     }
 };
 
 template <typename MemberType, int UniqueID = 0>
-struct base_from_member {
-    MemberType member;
+struct BaseFromMember {
+    MemberType member_;
 
     template <typename... Args>
-    explicit base_from_member(Args&&... args)
-        : member(std::forward<Args>(args)...) {}
+    explicit BaseFromMember(Args&&... args)
+        : member_(std::forward<Args>(args)...) {}
 };
 
-// Inheriting base_from_member<Member> before Base guarantees `member` is
-// constructed first, so Base(member) is always safe.
-struct Derived : private base_from_member<Member>, public Base {
+// Inheriting BaseFromMember<Member> before Base guarantees `member_` is
+// constructed first, so Base(member_) is always safe.
+struct Derived : private BaseFromMember<Member>, public Base {
     explicit Derived(int x)
-        : base_from_member<Member>(x), // `member` constructed here, first
-          Base(member)                 // ...then safely passed to Base
+        : BaseFromMember<Member>(x), // `member` constructed here, first
+          Base(member_)                 // ...then safely passed to Base
     {}
 
-    using base_from_member<Member>::member;
+    using BaseFromMember<Member>::member_;
 };
 
 int main() {
     Derived d(42);
-    std::cout << "Derived.member.value = " << d.member.value << "\n";
+    std::cout << "Derived.member.value = " << d.member_.value_ << "\n";
     return 0;
 }

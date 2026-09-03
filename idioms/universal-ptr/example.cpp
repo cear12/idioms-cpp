@@ -13,8 +13,8 @@ public:
     constexpr UniversalPtr(std::nullptr_t) noexcept {}
 
     // Observing: wraps a raw pointer without taking ownership of it.
-    explicit UniversalPtr(T* rawPtr) noexcept
-        : ptr_(rawPtr, &NoDelete), owning_(false) {}
+    explicit UniversalPtr(T* raw_ptr) noexcept
+        : ptr_(raw_ptr, &NoDelete), owning_(false) {}
 
     // Observing: wraps the address of a referenced object.
     explicit UniversalPtr(T& obj) noexcept
@@ -28,7 +28,7 @@ public:
         owned.release(); // ptr_'s captured deleter now owns destruction
     }
 
-    T* get() const noexcept { return ptr_.get(); }
+    T* Get() const noexcept { return ptr_.get(); }
     T& operator*() const { return *ptr_; }
     T* operator->() const noexcept { return ptr_.get(); }
     explicit operator bool() const noexcept { return static_cast<bool>(ptr_); }
@@ -36,7 +36,7 @@ public:
     // Whether this UniversalPtr will destroy its pointee when the last
     // reference to it goes away. Not observable from shared_ptr itself in
     // any simpler portable way, so tracked explicitly.
-    bool owns() const noexcept { return owning_; }
+    bool Owns() const noexcept { return owning_; }
 
 private:
     static void NoDelete(T*) noexcept {}
@@ -46,25 +46,25 @@ private:
 };
 
 struct Widget {
-    int id;
-    explicit Widget(int i) : id(i) { std::cout << "Widget(" << id << ") constructed\n"; }
-    ~Widget() { std::cout << "Widget(" << id << ") destroyed\n"; }
+    int id_;
+    explicit Widget(int i) : id_(i) { std::cout << "Widget(" << id_ << ") constructed\n"; }
+    ~Widget() { std::cout << "Widget(" << id_ << ") destroyed\n"; }
 };
 
 int main() {
-    Widget stackWidget(1);
+    Widget stack_widget(1);
     {
-        UniversalPtr<Widget> observing(&stackWidget);
-        std::cout << "observing.owns()=" << std::boolalpha << observing.owns()
-                  << " id=" << observing->id << "\n";
+        UniversalPtr<Widget> observing(&stack_widget);
+        std::cout << "observing.owns()=" << std::boolalpha << observing.Owns()
+                  << " id=" << observing->id_ << "\n";
     } // observing destroyed here; stackWidget must NOT be destroyed by it
 
-    std::cout << "stackWidget still alive: id=" << stackWidget.id << "\n";
+    std::cout << "stackWidget still alive: id=" << stack_widget.id_ << "\n";
 
     {
         UniversalPtr<Widget> owning(std::make_unique<Widget>(2));
-        std::cout << "owning.owns()=" << std::boolalpha << owning.owns()
-                  << " id=" << owning->id << "\n";
+        std::cout << "owning.owns()=" << std::boolalpha << owning.Owns()
+                  << " id=" << owning->id_ << "\n";
     } // owning destroyed here; Widget(2) IS destroyed as part of this
 
     std::cout << "done\n";

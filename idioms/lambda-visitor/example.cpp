@@ -7,7 +7,7 @@
 #include <variant>
 
 template <typename... Lambdas>
-auto make_lambda(Lambdas... lambdas) {
+auto MakeLambda(Lambdas... lambdas) {
     return [=](auto&& arg) {
         // A plain fold `(lambdas(arg), ...)` would call *every* lambda
         // unconditionally with `arg`, which only compiles if all of them
@@ -15,17 +15,17 @@ auto make_lambda(Lambdas... lambdas) {
         // Guarding each call with `if constexpr` discards the ones that
         // aren't callable with this particular arg from instantiation, so
         // only the matching lambda actually runs.
-        auto tryOne = [&](auto&& lambda) {
+        auto try_one = [&](auto&& lambda) {
             if constexpr (std::is_invocable_v<decltype(lambda), decltype(arg)>) {
                 lambda(arg);
             }
         };
-        (tryOne(lambdas), ...);
+        (try_one(lambdas), ...);
     };
 }
 
 int main() {
-    auto resultPrinter = make_lambda(
+    auto result_printer = MakeLambda(
         [](std::monostate) { std::cout << "Empty state\n"; },
         [](int x) { std::cout << "Integer: " << x << "\n"; },
         [](const std::string& str) { std::cout << "String: " << str << "\n"; });
@@ -33,13 +33,13 @@ int main() {
     std::variant<std::monostate, int, std::string> value;
 
     value = std::monostate{};
-    std::visit(resultPrinter, value);
+    std::visit(result_printer, value);
 
     value = 42;
-    std::visit(resultPrinter, value);
+    std::visit(result_printer, value);
 
     value = std::string("hello");
-    std::visit(resultPrinter, value);
+    std::visit(result_printer, value);
 
     return 0;
 }

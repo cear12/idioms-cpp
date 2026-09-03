@@ -24,7 +24,7 @@ constructing from a raw pointer/reference installs a no-op deleter (so
 destroying the `UniversalPtr` never destroys the pointee); constructing
 from a `unique_ptr<T, D>` installs a deleter that captures and invokes the
 unique_ptr's own deleter `D`, and releases the `unique_ptr` so only the
-new `UniversalPtr` is responsible for destruction. An explicit `owns()`
+new `UniversalPtr` is responsible for destruction. An explicit `Owns()`
 flag records which case applies, since it's not otherwise observable from
 outside.
 

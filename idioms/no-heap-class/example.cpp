@@ -9,7 +9,7 @@ protected:
     static void* operator new[](std::size_t);  // never meant to be called
 
 public:
-    void hello() const { std::cout << "NoHeap on the stack\n"; }
+    void Hello() const { std::cout << "NoHeap on the stack\n"; }
 };
 
 class NoHeapTwo : public NoHeap {
@@ -20,8 +20,8 @@ class NoHeapTwo : public NoHeap {
 int main() {
     NoHeap a;         // fine: stack allocation
     NoHeapTwo b;       // fine: stack allocation, inherited restriction
-    a.hello();
-    b.hello();
+    a.Hello();
+    b.Hello();
 
     // Every one of the following is a compile error (operator new is
     // protected/inaccessible here), which is the entire point:

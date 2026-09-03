@@ -6,30 +6,30 @@
 template <typename Derived>
 class Base {
 public:
-    void do_something() {
+    void DoSomething() {
         std::cout << "Base::do_something\n";
-        static_cast<Derived*>(this)->do_something_impl();
+        static_cast<Derived*>(this)->DoSomethingImpl();
     }
 };
 
 class Foo : public Base<Foo> {
 public:
-    void do_something_impl() {
+    void DoSomethingImpl() {
         std::cout << "Foo::do_something_impl\n";
     }
 };
 
-// Bar inherits the CRTP machinery but never defines do_something_impl();
-// as long as nothing calls do_something() on a Bar, this compiles fine --
+// Bar inherits the CRTP machinery but never defines DoSomethingImpl();
+// as long as nothing calls DoSomething() on a Bar, this compiles fine --
 // the requirement is only enforced at the point of use, like a duck-typed
 // interface.
 class Bar : public Base<Bar> {};
 
 int main() {
     Foo foo;
-    foo.do_something();
+    foo.DoSomething();
 
-    Base<Foo>().do_something();
+    Base<Foo>().DoSomething();
 
     return 0;
 }

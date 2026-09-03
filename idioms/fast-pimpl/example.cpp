@@ -14,7 +14,7 @@ public:
     Wrapper(const Wrapper&) = delete;
     Wrapper& operator=(const Wrapper&) = delete;
 
-    void doSomething();
+    void DoSomething();
 
 private:
     struct Wrapped; // incomplete here -- callers of Wrapper never see it
@@ -23,48 +23,48 @@ private:
     // generously for this example; a real Fast Pimpl picks it based on the
     // actual implementation type and enforces it with the static_assert
     // below, in the .cpp file where Wrapped becomes complete.
-    alignas(std::max_align_t) char storage[64];
+    alignas(std::max_align_t) char storage_[64];
 
-    Wrapped* getImpl();
+    Wrapped* GetImpl();
 };
 
 // --- Implementation, only visible in this translation unit.
 struct Wrapper::Wrapped {
-    int value;
-    Wrapped() : value(42) {
-        std::cout << "Wrapped constructed with value=" << value << "\n";
+    int value_;
+    Wrapped() : value_(42) {
+        std::cout << "Wrapped constructed with value=" << value_ << "\n";
     }
     ~Wrapped() {
         std::cout << "Wrapped destructed\n";
     }
-    void work() const {
-        std::cout << "Work with value=" << value << "\n";
+    void Work() const {
+        std::cout << "Work with value=" << value_ << "\n";
     }
 };
 
 Wrapper::Wrapper() {
-    static_assert(sizeof(Wrapped) <= sizeof(storage), "Wrapped is too big for local storage");
-    new (storage) Wrapped(); // placement new: construct in Wrapper's own inline buffer
+    static_assert(sizeof(Wrapped) <= sizeof(storage_), "Wrapped is too big for local storage");
+    new (storage_) Wrapped(); // placement new: construct in Wrapper's own inline buffer
 }
 
 Wrapper::~Wrapper() {
-    getImpl()->~Wrapped();
+    GetImpl()->~Wrapped();
 }
 
-Wrapper::Wrapped* Wrapper::getImpl() {
+Wrapper::Wrapped* Wrapper::GetImpl() {
     // std::launder is needed because `storage`'s declared type (char[64])
     // differs from the object now living in it (Wrapped); without it, an
     // optimizer would be allowed to assume the reinterpret_cast result
     // still points to a char array.
-    return std::launder(reinterpret_cast<Wrapped*>(storage));
+    return std::launder(reinterpret_cast<Wrapped*>(storage_));
 }
 
-void Wrapper::doSomething() {
-    getImpl()->work();
+void Wrapper::DoSomething() {
+    GetImpl()->Work();
 }
 
 int main() {
     Wrapper w;
-    w.doSomething();
+    w.DoSomething();
     return 0;
 }

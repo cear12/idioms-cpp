@@ -18,13 +18,13 @@ so a `std::visit` call site can just list the lambdas inline.
 ## Solution
 
 ```cpp
-template<class... Ts> struct overload : Ts... { using Ts::operator()...; };
-template<class... Ts> overload(Ts...) -> overload<Ts...>; // CTAD guide
+template<class... Ts> struct Overload : Ts... { using Ts::operator()...; };
+template<class... Ts> Overload(Ts...) -> Overload<Ts...>; // CTAD guide
 ```
 
 Each lambda becomes a base class contributing one `operator()` overload;
 class template argument deduction (the deduction guide) lets callers write
-`overload{lambda1, lambda2, ...}` without spelling out the template
+`Overload{lambda1, lambda2, ...}` without spelling out the template
 arguments.
 
 ## Known Uses

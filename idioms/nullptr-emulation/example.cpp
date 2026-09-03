@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <iostream>
 
-const class nullptr_emulation_t {
+const class NullptrEmulationT {
 public:
     // Convertible to any non-member pointer type...
     template <class T>
@@ -24,30 +24,30 @@ private:
     // object with storage.
     void operator&() const = delete;
 
-} my_nullptr = {};
+} kMyNullptr = {};
 
-void takesPointer(int*) {
+void TakesPointer(int*) {
     std::cout << "takesPointer(int*) called\n";
 }
 
-void takesInt(int) {
+void TakesInt(int) {
     std::cout << "takesInt(int) called\n";
 }
 
 // Overloaded on pointer vs. integral: with real 0/NULL this would be
 // ambiguous or silently pick the wrong overload; my_nullptr resolves to
 // the pointer overload unambiguously, exactly like the real `nullptr`.
-void overloaded(int*) { std::cout << "overloaded(int*) called\n"; }
-void overloaded(long) { std::cout << "overloaded(long) called\n"; }
+void Overloaded(int*) { std::cout << "overloaded(int*) called\n"; }
+void Overloaded(long) { std::cout << "overloaded(long) called\n"; }
 
 int main() {
-    int* p = my_nullptr;
+    int* p = kMyNullptr;
     std::cout << "p == nullptr: " << std::boolalpha << (p == nullptr) << "\n";
 
-    takesPointer(my_nullptr);
-    takesInt(0); // ordinary 0 still converts to int, as always
+    TakesPointer(kMyNullptr);
+    TakesInt(0); // ordinary 0 still converts to int, as always
 
-    overloaded(my_nullptr); // binds to the pointer overload, unambiguously
+    Overloaded(kMyNullptr); // binds to the pointer overload, unambiguously
 
     return 0;
 }

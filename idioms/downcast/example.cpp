@@ -9,12 +9,12 @@
 // ============================================================
 namespace technique1 {
 struct Base { virtual ~Base() = default; };
-struct Derived : Base { void hello() const { std::cout << "technique1::Derived\n"; } };
+struct Derived : Base { void Hello() const { std::cout << "technique1::Derived\n"; } };
 
-void demo() {
+void Demo() {
     Base* b = new Derived();
     if (Derived* d = dynamic_cast<Derived*>(b)) {
-        d->hello();
+        d->Hello();
     }
     delete b;
 }
@@ -35,13 +35,13 @@ public:
 class Derived : public Base {
 public:
     Derived* IsDerived() override { return this; }
-    void hello() const { std::cout << "technique2::Derived\n"; }
+    void Hello() const { std::cout << "technique2::Derived\n"; }
 };
 
-void demo() {
+void Demo() {
     Base* b = new Derived();
     if (Derived* d = b->IsDerived()) {
-        d->hello();
+        d->Hello();
     }
     delete b;
 }
@@ -53,41 +53,42 @@ void demo() {
 namespace technique3 {
 class Base {
 public:
-    enum Type { BASE, DERIVED };
-    Type type() const { return mType; }
-    enum { TAG = BASE };
+    enum Type { kBase, kDerived };
+    Type GetType() const { return m_type_; }
+    enum { kTag = kBase };
 
-    Base() : mType(BASE) {}
+    Base() : m_type_(kBase) {}
     virtual ~Base() = default;
 
 protected:
-    explicit Base(Type t) : mType(t) {}
+    explicit Base(Type t) : m_type_(t) {}
 
 private:
-    Type mType;
+    Type m_type_;
 };
 
 class Derived : public Base {
 public:
-    Derived() : Base(Base::DERIVED) {}
-    enum { TAG = DERIVED };
-    void hello() const { std::cout << "technique3::Derived\n"; }
+    Derived() : Base(Base::kDerived) {}
+    enum { kTag = kDerived };
+    void Hello() const { std::cout << "technique3::Derived\n"; }
 };
 
 template <class Target, class Source>
-Target* down_cast(Source* s) {
-    // s->type() and Target::TAG are enumerators of two different (unscoped)
-    // enum types; comparing them directly is well-defined (both promote to
-    // int) but triggers -Wenum-compare, so the intent is made explicit here.
-    return static_cast<int>(s->type()) == static_cast<int>(Target::TAG)
+Target* DownCast(Source* s) {
+    // s->GetType() and Target::kTag are enumerators of two different
+    // (unscoped) enum types; comparing them directly is well-defined (both
+    // promote to int) but triggers -Wenum-compare, so the intent is made
+    // explicit here.
+    return static_cast<int>(s->GetType()) == static_cast<int>(Target::kTag)
                ? static_cast<Target*>(s)
                : nullptr;
 }
 
-void demo() {
+void Demo() {
     Base* b = new Derived();
-    if (Derived* d = down_cast<Derived>(b)) {
-        d->hello();
+    if (Derived* d = DownCast<Derived>(b)) {
+        d->Hello();
     }
     delete b;
 }
@@ -104,36 +105,36 @@ class TestDerived1;
 class TestBase {
 public:
     virtual ~TestBase() = default;
-    virtual TestDerived1* asTestDerived1() { return nullptr; }
+    virtual TestDerived1* AsTestDerived1() { return nullptr; }
 };
 
 class TestDerived1 : public TestBase {
 public:
-    TestDerived1* asTestDerived1() override { return this; }
-    void hello() const { std::cout << "technique4::TestDerived1\n"; }
+    TestDerived1* AsTestDerived1() override { return this; }
+    void Hello() const { std::cout << "technique4::TestDerived1\n"; }
 };
 
-void demo() {
+void Demo() {
     TestBase* b = new TestDerived1();
-    if (TestDerived1* d = b->asTestDerived1()) {
-        d->hello();
+    if (TestDerived1* d = b->AsTestDerived1()) {
+        d->Hello();
     }
     delete b;
 }
 } // namespace technique4
 
 // ============================================================
-// 5. constexpr-branching as_cast
+// 5. constexpr-branching AsCast
 // ============================================================
 namespace technique5 {
 struct NonPolyBase {};
-struct NonPolyDerived : NonPolyBase { void hello() const { std::cout << "technique5::NonPolyDerived\n"; } };
+struct NonPolyDerived : NonPolyBase { void Hello() const { std::cout << "technique5::NonPolyDerived\n"; } };
 
 struct PolyBase { virtual ~PolyBase() = default; };
-struct PolyDerived : PolyBase { void hello() const { std::cout << "technique5::PolyDerived\n"; } };
+struct PolyDerived : PolyBase { void Hello() const { std::cout << "technique5::PolyDerived\n"; } };
 
 template <typename To, typename From>
-To* as_cast(From* ptr) noexcept {
+To* AsCast(From* ptr) noexcept {
     if (!ptr) return nullptr;
     if constexpr (std::is_polymorphic_v<From>) {
         return dynamic_cast<To*>(ptr); // checked: safe even for unrelated types
@@ -145,22 +146,22 @@ To* as_cast(From* ptr) noexcept {
     }
 }
 
-void demo() {
+void Demo() {
     PolyBase* pb = new PolyDerived();
-    if (auto* pd = as_cast<PolyDerived>(pb)) pd->hello();
+    if (auto* pd = AsCast<PolyDerived>(pb)) pd->Hello();
     delete pb;
 
     NonPolyDerived nd;
     NonPolyBase* nb = &nd;
-    if (auto* back = as_cast<NonPolyDerived>(nb)) back->hello();
+    if (auto* back = AsCast<NonPolyDerived>(nb)) back->Hello();
 }
 } // namespace technique5
 
 int main() {
-    technique1::demo();
-    technique2::demo();
-    technique3::demo();
-    technique4::demo();
-    technique5::demo();
+    technique1::Demo();
+    technique2::Demo();
+    technique3::Demo();
+    technique4::Demo();
+    technique5::Demo();
     return 0;
 }

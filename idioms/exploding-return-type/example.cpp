@@ -7,15 +7,15 @@
 #include <utility>
 
 template <typename T>
-class exploding_return {
+class ExplodingReturn {
     bool ok_;
     T value_{};
     std::string error_;
 public:
-    exploding_return(T v)
+    ExplodingReturn(T v)
         : ok_(true), value_(std::move(v)) {}
 
-    exploding_return(std::string err)
+    ExplodingReturn(std::string err)
         : ok_(false), error_(std::move(err)) {}
 
     // The "explosion": converting to T throws if construction was from an
@@ -27,7 +27,7 @@ public:
     }
 };
 
-exploding_return<int> parse_int(const std::string& s) {
+ExplodingReturn<int> ParseInt(const std::string& s) {
     try {
         return std::stoi(s);
     } catch (...) {
@@ -36,11 +36,11 @@ exploding_return<int> parse_int(const std::string& s) {
 }
 
 int main() {
-    int x = parse_int("42");
+    int x = ParseInt("42");
     std::cout << "Parsed: " << x << "\n";
 
     try {
-        int y = parse_int("not a num"); // throws inside the conversion
+        int y = ParseInt("not a num"); // throws inside the conversion
         std::cout << "Parsed: " << y << "\n";
     } catch (const std::exception& e) {
         std::cout << "Error: " << e.what() << "\n";

@@ -4,23 +4,23 @@
 #include <memory>
 #include <iostream>
 
-struct foo {
-    int value;
+struct Foo {
+    int value_;
 };
 
-extern "C" foo* create_foo();
-extern "C" void foo_destroy(foo*);
+extern "C" Foo* CreateFoo();
+extern "C" void FooDestroy(Foo*);
 
-foo* create_foo() { return new foo{42}; }
-void foo_destroy(foo* p) { delete p; }
+Foo* CreateFoo() { return new Foo{42}; }
+void FooDestroy(Foo* p) { delete p; }
 
-struct foo_deleter {
-    void operator()(foo* p) const { foo_destroy(p); }
+struct FooDeleter {
+    void operator()(Foo* p) const { FooDestroy(p); }
 };
-using unique_foo = std::unique_ptr<foo, foo_deleter>;
+using UniqueFoo = std::unique_ptr<Foo, FooDeleter>;
 
-inline unique_foo create_unique_foo() {
-    return unique_foo{create_foo()};
+inline UniqueFoo CreateUniqueFoo() {
+    return UniqueFoo{CreateFoo()};
 }
 
 #if defined(__GNUC__)
@@ -28,8 +28,8 @@ inline unique_foo create_unique_foo() {
 #endif
 
 int main() {
-    unique_foo uf = create_unique_foo();
-    std::cout << "foo.value = " << uf->value << "\n";
+    UniqueFoo uf = CreateUniqueFoo();
+    std::cout << "foo.value = " << uf->value_ << "\n";
 
     // Uncommenting the next line is now a compile error under GCC/Clang,
     // instead of a silent resource leak:

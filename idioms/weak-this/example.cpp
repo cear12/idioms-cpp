@@ -11,25 +11,25 @@ public:
     // Constructor is private; the only way to get an ImageView is through
     // create(), which guarantees it's always owned by a shared_ptr --
     // required for shared_from_this()/weak_from_this() to be valid.
-    static std::shared_ptr<ImageView> create(int id) {
+    static std::shared_ptr<ImageView> Create(int id) {
         return std::shared_ptr<ImageView>(new ImageView(id));
     }
 
     // Simulates kicking off an async load: the "network layer" here is
     // just a vector of callbacks main() will invoke later, standing in for
     // whatever a real event loop or I/O completion handler would call.
-    void startLoad(std::vector<std::function<void()>>& pendingCallbacks) {
-        std::weak_ptr<ImageView> weakSelf = weak_from_this();
-        pendingCallbacks.push_back([weakSelf]() {
-            if (auto self = weakSelf.lock()) {
-                self->onLoaded();
+    void StartLoad(std::vector<std::function<void()>>& pending_callbacks) {
+        std::weak_ptr<ImageView> weak_self = weak_from_this();
+        pending_callbacks.push_back([weak_self]() {
+            if (auto self = weak_self.lock()) {
+                self->OnLoaded();
             } else {
                 std::cout << "Callback fired after its ImageView was destroyed; skipped safely\n";
             }
         });
     }
 
-    void onLoaded() const {
+    void OnLoaded() const {
         std::cout << "ImageView " << id_ << " finished loading\n";
     }
 
@@ -41,13 +41,13 @@ private:
 int main() {
     std::vector<std::function<void()>> pending;
 
-    auto longLived = ImageView::create(1);
-    longLived->startLoad(pending);
+    auto long_lived = ImageView::Create(1);
+    long_lived->StartLoad(pending);
 
     {
-        auto shortLived = ImageView::create(2);
-        shortLived->startLoad(pending);
-    } // shortLived destroyed here; its pending callback's weak_ptr will be expired
+        auto short_lived = ImageView::Create(2);
+        short_lived->StartLoad(pending);
+    } // short_lived destroyed here; its pending callback's weak_ptr will be expired
 
     std::cout << "-- running pending callbacks --\n";
     for (auto& cb : pending) cb();

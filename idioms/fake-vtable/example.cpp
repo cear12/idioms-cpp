@@ -5,7 +5,7 @@
 #include <iostream>
 
 struct FakeVtable {
-    void (*foo)();
+    void (*foo_)();
 };
 
 void BaseFoo() {
@@ -18,31 +18,31 @@ void DerivedFoo() {
 
 class Base {
 public:
-    FakeVtable* vtable;
+    FakeVtable* vtable_;
 
     Base() {
-        vtable = new FakeVtable{&BaseFoo};
+        vtable_ = new FakeVtable{&BaseFoo};
     }
 
-    void foo() {
-        vtable->foo(); // dispatches through the fake vtable, not a real virtual call
+    void Foo() {
+        vtable_->foo_(); // dispatches through the fake vtable, not a real virtual call
     }
 
     virtual ~Base() {
-        delete vtable;
+        delete vtable_;
     }
 };
 
 class Derived : public Base {
 public:
     Derived() {
-        vtable->foo = &DerivedFoo; // "override" by rewriting the function pointer
+        vtable_->foo_ = &DerivedFoo; // "override" by rewriting the function pointer
     }
 };
 
 int main() {
     Base* obj = new Derived();
-    obj->foo(); // prints "Derived::foo"
+    obj->Foo(); // prints "Derived::foo"
     delete obj;
     return 0;
 }

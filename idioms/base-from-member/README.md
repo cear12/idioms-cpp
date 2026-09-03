@@ -28,9 +28,9 @@ struct Derived : Base {
 
 ## Solution
 
-Insert an intermediate base class, `base_from_member<MemberType>`, ahead
+Insert an intermediate base class, `BaseFromMember<MemberType>`, ahead
 of `Base` in the inheritance list. Because base classes are constructed in
-declaration (inheritance-list) order, `base_from_member`'s own `member` is
+declaration (inheritance-list) order, `BaseFromMember`'s own `member_` is
 fully constructed *before* `Base` is, so `Base`'s constructor can safely
 receive a reference to it.
 

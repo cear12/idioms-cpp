@@ -43,11 +43,11 @@ public:
     using DataType = std::pair<std::string, double>;
     using DataContainer = std::vector<DataType>;
 
-    void addSample(const std::string& label, double value) {
+    void AddSample(const std::string& label, double value) {
         data_.push_back({label, value});
     }
 
-    void processData() const {
+    void ProcessData() const {
         // Local alias inside a function body.
         using ResultType = std::unordered_map<std::string, int>;
         ResultType counts;
@@ -62,7 +62,7 @@ private:
 
 // Local aliases inside a template function.
 template <typename Container>
-void processContainer(const Container& container) {
+void ProcessContainer(const Container& container) {
     using ValueType [[maybe_unused]] = typename Container::value_type;
 
     std::cout << "Size: " << container.size() << "\nElements: ";
@@ -97,14 +97,14 @@ int main() {
 
     std::cout << "\n=== DataProcessor (class-local aliases) ===\n";
     DataProcessor processor;
-    processor.addSample("temp", 21.5);
-    processor.addSample("temp", 22.0);
-    processor.addSample("humidity", 55.0);
-    processor.processData();
+    processor.AddSample("temp", 21.5);
+    processor.AddSample("temp", 22.0);
+    processor.AddSample("humidity", 55.0);
+    processor.ProcessData();
 
     std::cout << "\n=== function-local aliases ===\n";
-    processContainer(Vector<int>{1, 2, 3});
-    processContainer(Vector<std::string>{"Hello", "World"});
+    ProcessContainer(Vector<int>{1, 2, 3});
+    ProcessContainer(Vector<std::string>{"Hello", "World"});
 
     return 0;
 }

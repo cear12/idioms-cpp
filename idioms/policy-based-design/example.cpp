@@ -7,10 +7,10 @@
 
 template <typename T>
 struct DefaultAllocator {
-    T* allocate(size_t n) {
+    T* Allocate(size_t n) {
         return static_cast<T*>(::operator new(n * sizeof(T)));
     }
-    void deallocate(T* p) {
+    void Deallocate(T* p) {
         ::operator delete(p);
     }
 };
@@ -35,31 +35,31 @@ template <
     template <typename> class LogPolicy = NoLogger>
 class Container : private AllocPolicy<T>, private LogPolicy<T> {
 public:
-    void add(const T& value) {
+    void Add(const T& value) {
         this->log("add()");
-        T* p = this->allocate(1);
+        T* p = this->Allocate(1);
         try {
             new (p) T(value);
         } catch (...) {
-            this->deallocate(p);
+            this->Deallocate(p);
             throw;
         }
         p->~T();
-        this->deallocate(p);
+        this->Deallocate(p);
     }
 
-    void info() const {
+    void Info() const {
         this->log("info()");
     }
 };
 
 int main() {
     Container<int, DefaultAllocator, ConsoleLogger> c1;
-    c1.info();
-    c1.add(42);
+    c1.Info();
+    c1.Add(42);
 
     Container<std::string, DefaultAllocator, NoLogger> c2;
-    c2.info();
-    c2.add("Hello");
+    c2.Info();
+    c2.Add("Hello");
     return 0;
 }

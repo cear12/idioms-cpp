@@ -10,16 +10,16 @@ struct HeavyItem {};
 struct FragileItem {};
 
 template <class... Ts>
-struct overload : Ts... {
+struct Overload : Ts... {
     using Ts::operator()...;
 };
 template <class... Ts>
-overload(Ts...) -> overload<Ts...>; // class template argument deduction guide (C++17)
+Overload(Ts...) -> Overload<Ts...>; // class template argument deduction guide (C++17)
 
 int main() {
     std::variant<Fluid, LightItem, HeavyItem, FragileItem> package = Fluid{};
 
-    auto describe = overload{
+    auto describe = Overload{
         [](Fluid&) { std::cout << "fluid\n"; },
         [](LightItem&) { std::cout << "light item\n"; },
         [](HeavyItem&) { std::cout << "heavy item\n"; },

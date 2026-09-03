@@ -10,17 +10,17 @@
 template <typename T>
 class ThreadSafeVector {
 public:
-    void push_back(const T& value) {
+    void PushBack(const T& value) {
         std::lock_guard<std::mutex> lock(mtx_);
         data_.push_back(value);
     }
 
-    size_t size() const {
+    size_t Size() const {
         std::lock_guard<std::mutex> lock(mtx_);
         return data_.size();
     }
 
-    T get(size_t index) const {
+    T Get(size_t index) const {
         std::lock_guard<std::mutex> lock(mtx_);
         return data_.at(index);
     }
@@ -31,18 +31,18 @@ private:
 };
 
 int main() {
-    ThreadSafeVector<int> tsVec;
+    ThreadSafeVector<int> ts_vec;
 
-    auto producer = [&tsVec]() {
+    auto producer = [&ts_vec]() {
         for (int i = 0; i < 100; ++i) {
-            tsVec.push_back(i);
+            ts_vec.PushBack(i);
             std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     };
 
-    auto consumer = [&tsVec]() {
+    auto consumer = [&ts_vec]() {
         for (int i = 0; i < 20; ++i) {
-            size_t s = tsVec.size();
+            size_t s = ts_vec.Size();
             std::cout << "Size at step " << i << ": " << s << "\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
@@ -53,6 +53,6 @@ int main() {
     t1.join();
     t2.join();
 
-    std::cout << "Final size: " << tsVec.size() << "\n";
+    std::cout << "Final size: " << ts_vec.Size() << "\n";
     return 0;
 }

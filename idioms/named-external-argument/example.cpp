@@ -5,31 +5,31 @@
 #include <iostream>
 #include <string>
 
-struct Width     { int value; };
-struct Height    { int value; };
-struct Resizable { bool value; };
-struct Decorated { bool value; };
-struct Title     { std::string value; };
+struct Width     { int value_; };
+struct Height    { int value_; };
+struct Resizable { bool value_; };
+struct Decorated { bool value_; };
+struct Title     { std::string value_; };
 
-constexpr Width     width(int v)      { return Width{v}; }
-constexpr Height    height(int v)     { return Height{v}; }
-constexpr Resizable resizable(bool v) { return Resizable{v}; }
-constexpr Decorated decorated(bool v) { return Decorated{v}; }
-Title title(const std::string& v)     { return Title{v}; }
+constexpr Width     MakeWidth(int v)      { return Width{v}; }
+constexpr Height    MakeHeight(int v)     { return Height{v}; }
+constexpr Resizable MakeResizable(bool v) { return Resizable{v}; }
+constexpr Decorated MakeDecorated(bool v) { return Decorated{v}; }
+Title MakeTitle(const std::string& v)     { return Title{v}; }
 
-void configureWindow(Width w, Height h, Resizable r, Decorated d, Title t) {
+void ConfigureWindow(Width w, Height h, Resizable r, Decorated d, Title t) {
     std::cout << "Window Configuration:\n"
-              << "  Width     = " << w.value << "\n"
-              << "  Height    = " << h.value << "\n"
-              << "  Resizable = " << std::boolalpha << r.value << "\n"
-              << "  Decorated = " << std::boolalpha << d.value << "\n"
-              << "  Title     = " << t.value << "\n";
+              << "  Width     = " << w.value_ << "\n"
+              << "  Height    = " << h.value_ << "\n"
+              << "  Resizable = " << std::boolalpha << r.value_ << "\n"
+              << "  Decorated = " << std::boolalpha << d.value_ << "\n"
+              << "  Title     = " << t.value_ << "\n";
 }
 
 int main() {
-    // Reads like named arguments; swapping width(...)/height(...) by
+    // Reads like named arguments; swapping MakeWidth(...)/MakeHeight(...) by
     // accident would be caught at compile time since they're distinct types.
-    configureWindow(width(800), height(600), resizable(true), decorated(false),
-                     title("My App Window"));
+    ConfigureWindow(MakeWidth(800), MakeHeight(600), MakeResizable(true), MakeDecorated(false),
+                     MakeTitle("My App Window"));
     return 0;
 }

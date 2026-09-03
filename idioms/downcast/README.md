@@ -24,8 +24,8 @@ from RTTI.
    right, but needs one virtual function per class that can be a downcast
    target.
 3. **Type tags + `static_cast`.** Each class stores an enum tag set by its
-   constructor; `down_cast<Target>(ptr)` compares `ptr->type()` against
-   `Target::TAG` before casting. No RTTI, but the tag enum must be
+   constructor; `DownCast<Target>(ptr)` compares `ptr->GetType()` against
+   `Target::kTag` before casting. No RTTI, but the tag enum must be
    extended for every new class, which doesn't scale well and is easy to
    get out of sync.
 4. **Manual RTTI via per-type virtual accessors.** `Base` declares one
@@ -34,7 +34,7 @@ from RTTI.
    `manual-rtti` idiom for a different (open, single-accessor) style of
    hand-rolled RTTI, and for a fuller discussion of when giving up
    `dynamic_cast` is worth it.
-5. **A `constexpr`-branching `as_cast<To, From>`.** Uses
+5. **A `constexpr`-branching `AsCast<To, From>`.** Uses
    `dynamic_cast` when the source type is actually polymorphic, falls back
    to `static_cast` when it's known statically convertible, and yields
    `nullptr` for anything else -- chosen entirely at compile time via

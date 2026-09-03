@@ -21,8 +21,8 @@ scale and leaks unrelated types' details into the factory's interface.
 Introduce a `BuildingSpec` hierarchy parallel to the `Building` hierarchy:
 each concrete spec (`FarmSpec`, `ForgeSpec`) carries exactly the
 construction data its matching concrete `Building` needs, and identifies
-its own kind via a virtual `building_type()`. The factory function takes a
-single `const BuildingSpec*`, switches on `building_type()`, and
+its own kind via a virtual `BuildingType()`. The factory function takes a
+single `const BuildingSpec*`, switches on `BuildingType()`, and
 `static_cast`s to the matching concrete spec type before forwarding its
 fields to the matching concrete `Building` constructor.
 
