@@ -30,6 +30,18 @@ Every `example.cpp` becomes its own executable and its own CTest case (30
 in total). There are no external dependencies beyond a C++17 compiler and
 threading support (`thread-safe-interface` uses `std::thread`).
 
+## Building in Visual Studio
+
+With 30 independent idiom executables and no single "main app", Visual
+Studio's Open Folder / CMake integration has nothing to pick as a default
+startup item. Without one, pressing **Debug/Run** (not Build) pops a
+blocking "Select Startup Item" dialog -- easy to mistake for the project
+failing to build, even though **Build > Build All** (Ctrl+Shift+B)
+succeeds regardless of what's selected there. `CMakePresets.json` sets
+`CMAKE_VS_STARTUP_PROJECT` to `acyclic-visitor` (alphabetically first) so
+Debug/Run works immediately too; pick a different target from the
+dropdown next to the Run button to debug any of the others.
+
 ## Index
 
 ### Construction & lifetime
