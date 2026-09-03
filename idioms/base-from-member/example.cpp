@@ -17,40 +17,40 @@
 #include <utility>
 
 struct Member {
-    explicit Member(int x) : value_(x) {
-        std::cout << "Member constructed with value=" << value_ << "\n";
-    }
-    int value_;
+  explicit Member(int x) : value_(x) {
+    std::cout << "Member constructed with value=" << value_ << "\n";
+  }
+  int value_;
 };
 
 struct Base {
-    explicit Base(Member& m) {
-        std::cout << "Base constructed, sees Member value=" << m.value_ << "\n";
-    }
+  explicit Base(Member& m) {
+    std::cout << "Base constructed, sees Member value=" << m.value_ << "\n";
+  }
 };
 
 template <typename MemberType, int UniqueID = 0>
 struct BaseFromMember {
-    MemberType member_;
+  MemberType member_;
 
-    template <typename... Args>
-    explicit BaseFromMember(Args&&... args)
-        : member_(std::forward<Args>(args)...) {}
+  template <typename... Args>
+  explicit BaseFromMember(Args&&... args)
+      : member_(std::forward<Args>(args)...) {}
 };
 
 // Inheriting BaseFromMember<Member> before Base guarantees `member_` is
 // constructed first, so Base(member_) is always safe.
 struct Derived : private BaseFromMember<Member>, public Base {
-    explicit Derived(int x)
-        : BaseFromMember<Member>(x), // `member` constructed here, first
-          Base(member_)                 // ...then safely passed to Base
-    {}
+  explicit Derived(int x)
+      : BaseFromMember<Member>(x),  // `member` constructed here, first
+        Base(member_)               // ...then safely passed to Base
+  {}
 
-    using BaseFromMember<Member>::member_;
+  using BaseFromMember<Member>::member_;
 };
 
 int main() {
-    Derived d(42);
-    std::cout << "Derived.member.value = " << d.member_.value_ << "\n";
-    return 0;
+  Derived d(42);
+  std::cout << "Derived.member.value = " << d.member_.value_ << "\n";
+  return 0;
 }

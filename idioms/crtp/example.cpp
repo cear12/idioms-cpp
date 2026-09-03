@@ -5,18 +5,16 @@
 
 template <typename Derived>
 class Base {
-public:
-    void DoSomething() {
-        std::cout << "Base::do_something\n";
-        static_cast<Derived*>(this)->DoSomethingImpl();
-    }
+ public:
+  void DoSomething() {
+    std::cout << "Base::do_something\n";
+    static_cast<Derived*>(this)->DoSomethingImpl();
+  }
 };
 
 class Foo : public Base<Foo> {
-public:
-    void DoSomethingImpl() {
-        std::cout << "Foo::do_something_impl\n";
-    }
+ public:
+  void DoSomethingImpl() { std::cout << "Foo::do_something_impl\n"; }
 };
 
 // Bar inherits the CRTP machinery but never defines DoSomethingImpl();
@@ -26,10 +24,10 @@ public:
 class Bar : public Base<Bar> {};
 
 int main() {
-    Foo foo;
-    foo.DoSomething();
+  Foo foo;
+  foo.DoSomething();
 
-    Base<Foo>().DoSomething();
+  Base<Foo>().DoSomething();
 
-    return 0;
+  return 0;
 }

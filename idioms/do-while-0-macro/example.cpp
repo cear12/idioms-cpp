@@ -6,26 +6,25 @@
 // doesn't compile.
 #include <iostream>
 
-#define LOG_PAIR(a, b)               \
-    do {                             \
-        std::cout << "a=" << (a);    \
-        std::cout << " b=" << (b);   \
-        std::cout << "\n";           \
-    } while (0)
+#define LOG_PAIR(a, b)         \
+  do {                         \
+    std::cout << "a=" << (a);  \
+    std::cout << " b=" << (b); \
+    std::cout << "\n";         \
+  } while (0)
 
 int main() {
-    bool verbose = true;
+  bool verbose = true;
 
-    // LOG_PAIR(1, 2); expands to a single statement, so this unbraced
-    // if/else is well-formed -- it would NOT be if LOG_PAIR's body were a
-    // bare {...} block instead of do{...}while(0).
-    if (verbose)
-        LOG_PAIR(1, 2);
-    else
-        std::cout << "quiet\n";
+  // LOG_PAIR(1, 2); expands to a single statement, so this unbraced
+  // if/else is well-formed -- it would NOT be if LOG_PAIR's body were a
+  // bare {...} block instead of do{...}while(0).
+  if (verbose)
+    LOG_PAIR(1, 2);
+  else
+    std::cout << "quiet\n";
 
-    for (int i = 0; i < 3; ++i)
-        LOG_PAIR(i, i * i);
+  for (int i = 0; i < 3; ++i) LOG_PAIR(i, i * i);
 
-    return 0;
+  return 0;
 }

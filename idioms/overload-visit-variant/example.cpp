@@ -11,28 +11,29 @@ struct FragileItem {};
 
 template <class... Ts>
 struct Overload : Ts... {
-    using Ts::operator()...;
+  using Ts::operator()...;
 };
 template <class... Ts>
-Overload(Ts...) -> Overload<Ts...>; // class template argument deduction guide (C++17)
+Overload(Ts...)
+    -> Overload<Ts...>;  // class template argument deduction guide (C++17)
 
 int main() {
-    std::variant<Fluid, LightItem, HeavyItem, FragileItem> package = Fluid{};
+  std::variant<Fluid, LightItem, HeavyItem, FragileItem> package = Fluid{};
 
-    auto describe = Overload{
-        [](Fluid&) { std::cout << "fluid\n"; },
-        [](LightItem&) { std::cout << "light item\n"; },
-        [](HeavyItem&) { std::cout << "heavy item\n"; },
-        [](FragileItem&) { std::cout << "fragile\n"; },
-    };
+  auto describe = Overload{
+      [](Fluid&) { std::cout << "fluid\n"; },
+      [](LightItem&) { std::cout << "light item\n"; },
+      [](HeavyItem&) { std::cout << "heavy item\n"; },
+      [](FragileItem&) { std::cout << "fragile\n"; },
+  };
 
-    std::visit(describe, package);
+  std::visit(describe, package);
 
-    package = HeavyItem{};
-    std::visit(describe, package);
+  package = HeavyItem{};
+  std::visit(describe, package);
 
-    package = FragileItem{};
-    std::visit(describe, package);
+  package = FragileItem{};
+  std::visit(describe, package);
 
-    return 0;
+  return 0;
 }

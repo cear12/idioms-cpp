@@ -8,38 +8,38 @@
 
 template <typename... Lambdas>
 auto MakeLambda(Lambdas... lambdas) {
-    return [=](auto&& arg) {
-        // A plain fold `(lambdas(arg), ...)` would call *every* lambda
-        // unconditionally with `arg`, which only compiles if all of them
-        // accept `arg`'s type -- defeating the point of a per-case visitor.
-        // Guarding each call with `if constexpr` discards the ones that
-        // aren't callable with this particular arg from instantiation, so
-        // only the matching lambda actually runs.
-        auto try_one = [&](auto&& lambda) {
-            if constexpr (std::is_invocable_v<decltype(lambda), decltype(arg)>) {
-                lambda(arg);
-            }
-        };
-        (try_one(lambdas), ...);
+  return [=](auto&& arg) {
+    // A plain fold `(lambdas(arg), ...)` would call *every* lambda
+    // unconditionally with `arg`, which only compiles if all of them
+    // accept `arg`'s type -- defeating the point of a per-case visitor.
+    // Guarding each call with `if constexpr` discards the ones that
+    // aren't callable with this particular arg from instantiation, so
+    // only the matching lambda actually runs.
+    auto try_one = [&](auto&& lambda) {
+      if constexpr (std::is_invocable_v<decltype(lambda), decltype(arg)>) {
+        lambda(arg);
+      }
     };
+    (try_one(lambdas), ...);
+  };
 }
 
 int main() {
-    auto result_printer = MakeLambda(
-        [](std::monostate) { std::cout << "Empty state\n"; },
-        [](int x) { std::cout << "Integer: " << x << "\n"; },
-        [](const std::string& str) { std::cout << "String: " << str << "\n"; });
+  auto result_printer = MakeLambda(
+      [](std::monostate) { std::cout << "Empty state\n"; },
+      [](int x) { std::cout << "Integer: " << x << "\n"; },
+      [](const std::string& str) { std::cout << "String: " << str << "\n"; });
 
-    std::variant<std::monostate, int, std::string> value;
+  std::variant<std::monostate, int, std::string> value;
 
-    value = std::monostate{};
-    std::visit(result_printer, value);
+  value = std::monostate{};
+  std::visit(result_printer, value);
 
-    value = 42;
-    std::visit(result_printer, value);
+  value = 42;
+  std::visit(result_printer, value);
 
-    value = std::string("hello");
-    std::visit(result_printer, value);
+  value = std::string("hello");
+  std::visit(result_printer, value);
 
-    return 0;
+  return 0;
 }

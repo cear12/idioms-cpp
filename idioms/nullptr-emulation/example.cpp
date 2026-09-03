@@ -10,29 +10,29 @@
 #include <iostream>
 
 const class NullptrEmulationT {
-public:
-    // Convertible to any non-member pointer type...
-    template <class T>
-    operator T*() const { return 0; }
+ public:
+  // Convertible to any non-member pointer type...
+  template <class T>
+  operator T*() const {
+    return 0;
+  }
 
-    // ...or any member pointer type...
-    template <class C, class T>
-    operator T C::*() const { return 0; }
+  // ...or any member pointer type...
+  template <class C, class T>
+  operator T C::*() const {
+    return 0;
+  }
 
-private:
-    // ...but never take its address, so it can't be mistaken for a real
-    // object with storage.
-    void operator&() const = delete;
+ private:
+  // ...but never take its address, so it can't be mistaken for a real
+  // object with storage.
+  void operator&() const = delete;
 
 } kMyNullptr = {};
 
-void TakesPointer(int*) {
-    std::cout << "takesPointer(int*) called\n";
-}
+void TakesPointer(int*) { std::cout << "takesPointer(int*) called\n"; }
 
-void TakesInt(int) {
-    std::cout << "takesInt(int) called\n";
-}
+void TakesInt(int) { std::cout << "takesInt(int) called\n"; }
 
 // Overloaded on pointer vs. integral: with real 0/NULL this would be
 // ambiguous or silently pick the wrong overload; my_nullptr resolves to
@@ -41,13 +41,13 @@ void Overloaded(int*) { std::cout << "overloaded(int*) called\n"; }
 void Overloaded(long) { std::cout << "overloaded(long) called\n"; }
 
 int main() {
-    int* p = kMyNullptr;
-    std::cout << "p == nullptr: " << std::boolalpha << (p == nullptr) << "\n";
+  int* p = kMyNullptr;
+  std::cout << "p == nullptr: " << std::boolalpha << (p == nullptr) << "\n";
 
-    TakesPointer(kMyNullptr);
-    TakesInt(0); // ordinary 0 still converts to int, as always
+  TakesPointer(kMyNullptr);
+  TakesInt(0);  // ordinary 0 still converts to int, as always
 
-    Overloaded(kMyNullptr); // binds to the pointer overload, unambiguously
+  Overloaded(kMyNullptr);  // binds to the pointer overload, unambiguously
 
-    return 0;
+  return 0;
 }

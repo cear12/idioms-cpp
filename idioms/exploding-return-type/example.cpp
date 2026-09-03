@@ -8,42 +8,40 @@
 
 template <typename T>
 class ExplodingReturn {
-    bool ok_;
-    T value_{};
-    std::string error_;
-public:
-    ExplodingReturn(T v)
-        : ok_(true), value_(std::move(v)) {}
+  bool ok_;
+  T value_{};
+  std::string error_;
 
-    ExplodingReturn(std::string err)
-        : ok_(false), error_(std::move(err)) {}
+ public:
+  ExplodingReturn(T v) : ok_(true), value_(std::move(v)) {}
 
-    // The "explosion": converting to T throws if construction was from an
-    // error message instead of a value.
-    operator T() {
-        if (!ok_)
-            throw std::runtime_error(error_);
-        return std::move(value_);
-    }
+  ExplodingReturn(std::string err) : ok_(false), error_(std::move(err)) {}
+
+  // The "explosion": converting to T throws if construction was from an
+  // error message instead of a value.
+  operator T() {
+    if (!ok_) throw std::runtime_error(error_);
+    return std::move(value_);
+  }
 };
 
 ExplodingReturn<int> ParseInt(const std::string& s) {
-    try {
-        return std::stoi(s);
-    } catch (...) {
-        return std::string("Cannot parse '") + s + "'";
-    }
+  try {
+    return std::stoi(s);
+  } catch (...) {
+    return std::string("Cannot parse '") + s + "'";
+  }
 }
 
 int main() {
-    int x = ParseInt("42");
-    std::cout << "Parsed: " << x << "\n";
+  int x = ParseInt("42");
+  std::cout << "Parsed: " << x << "\n";
 
-    try {
-        int y = ParseInt("not a num"); // throws inside the conversion
-        std::cout << "Parsed: " << y << "\n";
-    } catch (const std::exception& e) {
-        std::cout << "Error: " << e.what() << "\n";
-    }
-    return 0;
+  try {
+    int y = ParseInt("not a num");  // throws inside the conversion
+    std::cout << "Parsed: " << y << "\n";
+  } catch (const std::exception& e) {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+  return 0;
 }
