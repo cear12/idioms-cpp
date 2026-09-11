@@ -9,7 +9,13 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-add_compile_options(-Wall -Wextra -Wpedantic)
+# MSVC reads -Wall as /Wall (thousands of system-header warnings) and ignores
+# -Wextra/-Wpedantic with D9002; give it its own flags.
+if(MSVC)
+    add_compile_options(/W4 /permissive-)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 find_package(Threads REQUIRED)
 
